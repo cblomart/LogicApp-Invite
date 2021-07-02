@@ -27,7 +27,7 @@
     },
     "variables": {
         "eventHubNamespaceName": "[concat(parameters('LogicAppNamePrefix'), 'HubNs')]",
-        "eventHubName": "[concat(parameters('LogicAppNamePrefix'), 'HubNs/Invites')]"
+        "eventHubName": "Invites"
     },
     "resources": [
         {
@@ -48,7 +48,7 @@
         {
             "type": "Microsoft.EventHub/namespaces/eventhubs",
             "apiVersion": "2017-04-01",
-            "name": "[variables('eventHubName')]",
+            "name": "[concat(variables('eventHubNamespaceName'),'/',variables('eventHubName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNamespaceName'))]"
@@ -265,8 +265,9 @@
          "type": "Microsoft.Logic/workflows",
          "location": "[parameters('Location')]",
          "apiVersion": "2016-06-01",
-         
-              "dependsOn": [ "[variables('eventHubName')]" ]
+            "dependsOn": [ 
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), variables('eventHubName'))]"
+            ]
          
       }
    ],
