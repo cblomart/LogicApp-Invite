@@ -58,10 +58,7 @@
                 "partitionCount": 1
             }
         },
-        {
-            "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubName'))]"
-            ],
+                {
          "properties": {
             "state": "Disabled",
             "definition": {
@@ -267,7 +264,10 @@
          "name": "[concat(parameters('LogicAppNamePrefix'),'-Subsciption')]",
          "type": "Microsoft.Logic/workflows",
          "location": "[parameters('Location')]",
-         "apiVersion": "2016-06-01"
+         "apiVersion": "2016-06-01",
+         
+              "dependsOn": [ "[variables('eventHubName')]" ]
+         
       }
    ],
     "outputs": {}
