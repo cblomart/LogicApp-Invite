@@ -266,7 +266,7 @@
          "location": "[parameters('Location')]",
          "apiVersion": "2016-06-01",
             "dependsOn": [ 
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), variables('eventHubName'))]"
+                "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNamespaceName'))]" 
             ]
          
       }
