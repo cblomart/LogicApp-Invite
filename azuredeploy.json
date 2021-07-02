@@ -1,0 +1,235 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "LogicAppNamePrefix": {
+            "type": "string",
+            "defaultValue": "Guest-Invite",
+            "metadata": {
+                "description": "Prefix for logic app names"
+            }
+        },
+        "LogicAppLocation": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "The resource location for the logic app"
+            }
+        }
+    },
+    "variables": {},
+    "functions": [],
+    "resources": [
+      {
+         "properties": {
+            "state": "Disabled",
+            "definition": {
+                "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                "actions": {
+                    "Condition": {
+                        "actions": {
+                            "Compose_subscription_update": {
+                                "inputs": {
+                                    "expirationDateTime": "@variables('expiration')"
+                                },
+                                "runAfter": {},
+                                "type": "Compose"
+                            },
+                            "For_each": {
+                                "actions": {
+                                    "Update_scubsciption": {
+                                        "inputs": {
+                                            "authentication": {
+                                                "audience": "https://graph.microsoft.com",
+                                                "type": "ManagedServiceIdentity"
+                                            },
+                                            "body": "@outputs('Compose_subscription_update')",
+                                            "headers": {
+                                                "content-type": "application/json"
+                                            },
+                                            "method": "PATCH",
+                                            "uri": "https://graph.microsoft.com/v1.0/subscriptions/@{items('For_each')?['id']}"
+                                        },
+                                        "runAfter": {},
+                                        "type": "Http"
+                                    }
+                                },
+                                "foreach": "@body('Parse_JSON')?['value']",
+                                "runAfter": {
+                                    "Compose_subscription_update": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "Foreach"
+                            }
+                        },
+                        "else": {
+                            "actions": {
+                                "Compose_subscription": {
+                                    "inputs": {
+                                        "changeType": "updated",
+                                        "expirationDateTime": "@variables('expiration')",
+                                        "notificationUrl": "@variables('notificationUrl')",
+                                        "resource": "users"
+                                    },
+                                    "runAfter": {},
+                                    "type": "Compose"
+                                },
+                                "Create_subscription": {
+                                    "inputs": {
+                                        "authentication": {
+                                            "audience": "https://graph.microsoft.com",
+                                            "type": "ManagedServiceIdentity"
+                                        },
+                                        "body": "@outputs('Compose_subscription')",
+                                        "headers": {
+                                            "content-type": "application/json"
+                                        },
+                                        "method": "POST",
+                                        "uri": "https://graph.microsoft.com/v1.0/subscriptions"
+                                    },
+                                    "runAfter": {
+                                        "Compose_subscription": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Http"
+                                }
+                            }
+                        },
+                        "expression": {
+                            "and": [
+                                {
+                                    "greater": [
+                                        "@length(body('Parse_JSON')?['value'])",
+                                        0
+                                    ]
+                                }
+                            ]
+                        },
+                        "runAfter": {
+                            "Parse_JSON": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "If"
+                    },
+                    "GET_subscriptions": {
+                        "inputs": {
+                            "authentication": {
+                                "audience": "https://graph.microsoft.com",
+                                "type": "ManagedServiceIdentity"
+                            },
+                            "method": "GET",
+                            "uri": "https://graph.microsoft.com/v1.0/subscriptions"
+                        },
+                        "runAfter": {
+                            "Initialize_variable": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Http"
+                    },
+                    "Initialize_notification_URL": {
+                        "inputs": {
+                            "variables": [
+                                {
+                                    "name": "notificationUrl",
+                                    "type": "string",
+                                    "value": "EventHub:https://b10b-auto-vault.vault.azure.net/secrets/HubSender?tenantId=b10b.onmicrosoft.com"
+                                }
+                            ]
+                        },
+                        "runAfter": {},
+                        "type": "InitializeVariable"
+                    },
+                    "Initialize_variable": {
+                        "inputs": {
+                            "variables": [
+                                {
+                                    "name": "expiration",
+                                    "type": "string",
+                                    "value": "@{addDays(utcNow(),2)}"
+                                }
+                            ]
+                        },
+                        "runAfter": {
+                            "Initialize_notification_URL": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "InitializeVariable"
+                    },
+                    "Parse_JSON": {
+                        "inputs": {
+                            "content": "@body('GET_subscriptions')",
+                            "schema": {
+                                "properties": {
+                                    "value": {
+                                        "items": {
+                                            "properties": {
+                                                "changeType": {
+                                                    "type": "string"
+                                                },
+                                                "expirationDateTime": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "notificationUrl": {
+                                                    "type": "string"
+                                                },
+                                                "resource": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "resource",
+                                                "applicationId",
+                                                "changeType",
+                                                "notificationUrl",
+                                                "expirationDateTime"
+                                            ],
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "runAfter": {
+                            "GET_subscriptions": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ParseJson"
+                    }
+                },
+                "contentVersion": "1.0.0.0",
+                "outputs": {},
+                "parameters": {},
+                "triggers": {
+                    "Recurrence": {
+                        "recurrence": {
+                            "frequency": "Day",
+                            "interval": 1
+                        },
+                        "type": "Recurrence"
+                    }
+                }
+            },
+            "parameters": {}
+        },
+         "name": "[concat(parameters('LogicAppNamePrefix'),'-Subsciption')]",
+         "type": "Microsoft.Logic/workflows",
+         "location": "[parameters('LogicAppLocation')]",
+         "apiVersion": "2016-06-01",
+         "dependsOn": [
+         ]
+      }
+   ],
+    "outputs": {}
+ }

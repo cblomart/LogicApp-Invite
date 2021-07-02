@@ -1,0 +1,189 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Filter_updated_users_(non_invited_synced_guests)": {
+                "inputs": {
+                    "from": "@variables('updatedUsers')",
+                    "where": "@and(not(equals(item()?['mail'], item()?['userPrincipalName'])), equals(item()?['userType'], 'Guest'), equals(item()?['AccountEnabled'], true), equals(item()?['externalUserState'], null))"
+                },
+                "runAfter": {
+                    "For_each_updated_user_ids": [
+                        "Succeeded",
+                        "Failed",
+                        "TimedOut"
+                    ]
+                },
+                "type": "Query"
+            },
+            "For_each_updated_user_ids": {
+                "actions": {
+                    "Append_to_updated_users": {
+                        "inputs": {
+                            "name": "updatedUsers",
+                            "value": "@body('Parse_user_data')"
+                        },
+                        "runAfter": {
+                            "Parse_user_data": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "AppendToArrayVariable"
+                    },
+                    "Get_User_informations": {
+                        "inputs": {
+                            "authentication": {
+                                "audience": "https://graph.microsoft.com",
+                                "type": "ManagedServiceIdentity"
+                            },
+                            "method": "GET",
+                            "uri": "https://graph.microsoft.com/v1.0/users/@{items('For_each_updated_user_ids')?['resourceData']?['id']}?$select=id,userPrincipalName,mail,AccountEnabled,externalUserState,userType"
+                        },
+                        "runAfter": {},
+                        "type": "Http"
+                    },
+                    "Parse_user_data": {
+                        "inputs": {
+                            "content": "@body('Get_User_informations')",
+                            "schema": {
+                                "properties": {
+                                    "accountEnabled": {
+                                        "type": "boolean"
+                                    },
+                                    "externalUserState": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "mail": {
+                                        "type": "string"
+                                    },
+                                    "userPrincipalName": {
+                                        "type": "string"
+                                    },
+                                    "userType": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "runAfter": {
+                            "Get_User_informations": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ParseJson"
+                    }
+                },
+                "foreach": "@triggerBody()?['ContentData']?['value']",
+                "runAfter": {
+                    "Initialize_Updated_users": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            },
+            "Initialize_Updated_users": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "updatedUsers",
+                            "type": "array"
+                        }
+                    ]
+                },
+                "runAfter": {},
+                "type": "InitializeVariable"
+            },
+            "Invite_users": {
+                "actions": {
+                    "Compose_invitation": {
+                        "inputs": {
+                            "inviteRedirectUrl": "https://myapps.microsoft.com?tenantId=",
+                            "invitedUser": {
+                                "id": "@items('Invite_users')?['id']"
+                            },
+                            "invitedUserEmailAddress": "@items('Invite_users')?['mail']",
+                            "sendInvitationMessage": true
+                        },
+                        "runAfter": {},
+                        "type": "Compose"
+                    },
+                    "Post_invite": {
+                        "inputs": {
+                            "authentication": {
+                                "audience": "https://graph.microsoft.com",
+                                "type": "ManagedServiceIdentity"
+                            },
+                            "body": "@outputs('Compose_invitation')",
+                            "method": "POST",
+                            "uri": "https://graph.microsoft.com/v1.0/invitations"
+                        },
+                        "runAfter": {
+                            "Compose_invitation": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Http"
+                    }
+                },
+                "foreach": "@body('Filter_updated_users_(non_invited_synced_guests)')",
+                "runAfter": {
+                    "Filter_updated_users_(non_invited_synced_guests)": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            }
+        },
+        "triggers": {
+            "When_events_are_available_in_Event_Hub": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['eventhubs']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/@{encodeURIComponent('usersevents')}/events/batch/head",
+                    "queries": {
+                        "consumerGroupName": "$Default",
+                        "contentSchema": "{\n    \"type\": \"object\",\n    \"properties\": {\n        \"value\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"changeType\": {\n                        \"type\": \"string\"\n                    },\n                    \"clientState\": {},\n                    \"resource\": {\n                        \"type\": \"string\"\n                    },\n                    \"resourceData\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"@@odata.type\": {\n                                \"type\": \"string\"\n                            },\n                            \"@@odata.id\": {\n                                \"type\": \"string\"\n                            },\n                            \"id\": {\n                                \"type\": \"string\"\n                            },\n                            \"organizationId\": {\n                                \"type\": \"string\"\n                            },\n                            \"sequenceNumber\": {\n                                \"type\": \"integer\"\n                            }\n                        }\n                    },\n                    \"subscriptionExpirationDateTime\": {\n                        \"type\": \"string\"\n                    },\n                    \"subscriptionId\": {\n                        \"type\": \"string\"\n                    },\n                    \"tenantId\": {\n                        \"type\": \"string\"\n                    }\n                },\n                \"required\": [\n                    \"changeType\",\n                    \"clientState\",\n                    \"resource\",\n                    \"resourceData\",\n                    \"subscriptionExpirationDateTime\",\n                    \"subscriptionId\",\n                    \"tenantId\"\n                ]\n            }\n        }\n    }\n}",
+                        "contentType": "application/json",
+                        "maximumEventsCount": 50
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 3
+                },
+                "splitOn": "@triggerBody()",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "value": {
+                "eventhubs": {
+                    "connectionId": "/subscriptions/5849e9ec-a346-413a-b168-d7058655b036/resourceGroups/B10B-automation/providers/Microsoft.Web/connections/eventhubs",
+                    "connectionName": "eventhubs",
+                    "id": "/subscriptions/5849e9ec-a346-413a-b168-d7058655b036/providers/Microsoft.Web/locations/eastus/managedApis/eventhubs"
+                }
+            }
+        }
+    }
+}
