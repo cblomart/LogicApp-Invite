@@ -103,10 +103,10 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults',concat(parameters('LogicAppNamePrefix'), '-kv'))]",
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',concat(variables('eventHubNamespaceName'), '/usersevents/usereventspolicy'))]"
+                "[resourceId('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy')]"
             ],
             "properties": {
-                "value": "[listKeys(resourceId(concat('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules'),variables('eventHubNamespaceName'),'usersevents/usereventspolicy'),'2015-08-01').primaryConnectionString]"
+                "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy'),'2015-08-01').primaryConnectionString]"
             }
         },
         {
