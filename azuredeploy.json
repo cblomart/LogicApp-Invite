@@ -97,10 +97,9 @@
             },
             "resources": [
                 {
-                    "type": "Microsoft.KeyVault/vaults/secrets",
+                    "type": "secrets",
                     "apiVersion": "2020-04-01-preview",
                     "name": "userevents",
-                    "location": "[resourceGroup().location]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults',concat(parameters('LogicAppNamePrefix'), '-kv'))]",
                         "[resourceId('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy')]"
