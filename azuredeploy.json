@@ -104,7 +104,7 @@
                         "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy')]"
                     ],
                     "properties": {
-                        "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy'),'2015-08-01').primaryConnectionString]"
+                        "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy'),'2015-08-01').primaryConnectionString]"
                     }
                 }
             ]
