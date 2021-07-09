@@ -332,7 +332,7 @@
                 },
                 "parameters": {}
             },
-            "name": "[concat(parameters('LogicAppNamePrefix'),'-subsciption')]",
+            "name": "[concat(parameters('LogicAppNamePrefix'),'-subsrciption')]",
             "type": "Microsoft.Logic/workflows",
             "location": "[resourceGroup().location]",
             "apiVersion": "2016-06-01",
@@ -343,7 +343,7 @@
                 }
             },
             "dependsOn": [ 
-                "[resourceId('Microsoft.KeyVault/vaults/secrets','usersevents')]",
+                "[resourceId('Microsoft.KeyVault/vaults/secrets',concat(parameters('LogicAppNamePrefix'), '-kv'),'usersevents')]",
                 "[resourceId('Microsoft.Authorization/roleAssignments','guestInviterRole')]"
             ] 
         }
