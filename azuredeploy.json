@@ -58,7 +58,7 @@
         },
         {
             "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
-            "apiVersion": "2021-01-01-preview",
+            "apiVersion": "2018-01-01-preview",
             "name": "[concat(variables('eventHubNamespaceName'), '/usersevents/usereventspolicy')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
