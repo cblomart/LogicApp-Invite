@@ -25,7 +25,8 @@
         }
     },
     "variables": {
-        "eventHubNamespaceName": "[concat(parameters('LogicAppNamePrefix'), 'hub-ns')]"
+        "eventHubNamespaceName": "[concat(parameters('LogicAppNamePrefix'), 'hub-ns')]",
+        "managedidentity": "[concat(parameters('LogicAppNamePrefix'), '-identity')]"
     },
     "resources": [
         {
@@ -83,7 +84,7 @@
                 "tenantId": "[subscription().tenantId]",
                 "accessPolicies": [
                     {
-                        "tenantId": "c2d2b73a-2e6d-4b3c-abd4-a529b96ca9d9",
+                        "tenantId": "[subscription().tenantId]",
                         "objectId": "[parameters('graphChangeTrackingSp')]",
                         "permissions": {
                             "secrets": [
@@ -98,7 +99,7 @@
                 {
                     "type": "secrets",
                     "apiVersion": "2020-04-01-preview",
-                    "name": "userevents",
+                    "name": "usersevents",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults',concat(parameters('LogicAppNamePrefix'), '-kv'))]",
                         "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy')]"
@@ -108,6 +109,24 @@
                     }
                 }
             ]
+        },
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "[variables('managedidentity')]",
+            "apiVersion": "2018-11-30",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "name": "guestInviterRole",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2017-09-01",
+            "properties": {
+                "roleDefinitionId": "95e79109-95c0-4d8e-aee3-d01accf2d47b",
+                "principalId": "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedidentity')).principalId]"
+            },
+            "dependsOn": [ 
+                "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedidentity'))]"
+            ] 
         },
         {
             "properties": 
@@ -226,7 +245,7 @@
                                     {
                                         "name": "notificationUrl",
                                         "type": "string",
-                                        "value": "EventHub:https://b10b-auto-vault.vault.azure.net/secrets/HubSender?tenantId=b10b.onmicrosoft.com"
+                                        "value": "[concat('EventHub:','https://',parameters('LogicAppNamePrefix'), '.vault.azure.net/secrets/usersevents','?tenantId=',subscription().tenantId)]"
                                     }
                                 ]
                             },
@@ -317,8 +336,15 @@
             "type": "Microsoft.Logic/workflows",
             "location": "[resourceGroup().location]",
             "apiVersion": "2016-06-01",
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedidentity'))]": {}
+                }
+            },
             "dependsOn": [ 
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), 'usersevents')]"
+                "[resourceId('Microsoft.KeyVault/vaults/secrets','usersevents')]",
+                "[resourceId('Microsoft.Authorization/roleAssignments','guestInviterRole')]"
             ] 
         }
     ],
