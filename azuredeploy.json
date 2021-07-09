@@ -46,7 +46,7 @@
         {
             "type": "Microsoft.EventHub/namespaces/eventhubs",
             "apiVersion": "2017-04-01",
-            "name": "[concat(variables('eventHubNamespaceName'),'/userevents')]",
+            "name": "[concat(variables('eventHubNamespaceName'),'/usersevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNamespaceName'))]"
@@ -62,8 +62,7 @@
             "name": "[concat(variables('eventHubNamespaceName'), '/usersevents/usereventspolicy')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), 'usersevents')]",
-                "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNamespaceName'))]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), 'usersevents')]"
             ],
             "properties": {
                 "rights": [
@@ -102,7 +101,7 @@
                     "name": "userevents",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults',concat(parameters('LogicAppNamePrefix'), '-kv'))]",
-                        "[resourceId('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy')]"
+                        "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy')]"
                     ],
                     "properties": {
                         "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),'usersevents','usereventspolicy'),'2015-08-01').primaryConnectionString]"
@@ -319,7 +318,7 @@
             "location": "[resourceGroup().location]",
             "apiVersion": "2016-06-01",
             "dependsOn": [ 
-                "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNamespaceName'))]" 
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), 'usersevents')]"
             ] 
         }
     ],
