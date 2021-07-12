@@ -122,10 +122,10 @@
             "apiVersion": "2017-09-01",
             "properties": {
                 "roleDefinitionId": "95e79109-95c0-4d8e-aee3-d01accf2d47b",
-                "principalId": "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedidentity')).principalId]"
+                "principalId": "[reference(resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity')), '2018-11-30').principalId]"
             },
             "dependsOn": [ 
-                "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedidentity'))]"
+                "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]"
             ] 
         },
         {
@@ -339,7 +339,7 @@
             "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                    "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('managedidentity'))]": {}
+                    "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]": {}
                 }
             },
             "dependsOn": [ 
