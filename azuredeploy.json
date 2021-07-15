@@ -138,6 +138,7 @@
                                             "inputs": {
                                                 "authentication": {
                                                     "audience": "https://graph.microsoft.com",
+                                                    "identity": "[reference(resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity')))]",
                                                     "type": "ManagedServiceIdentity"
                                                 },
                                                 "body": "@outputs('Compose_subscription_update')",
@@ -176,6 +177,7 @@
                                         "inputs": {
                                             "authentication": {
                                                 "audience": "https://graph.microsoft.com",
+                                                "identity": "[reference(resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity')))]",
                                                 "type": "ManagedServiceIdentity"
                                             },
                                             "body": "@outputs('Compose_subscription')",
@@ -215,6 +217,7 @@
                             "inputs": {
                                 "authentication": {
                                     "audience": "https://graph.microsoft.com",
+                                    "identity": "[reference(resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity')))]",
                                     "type": "ManagedServiceIdentity"
                                 },
                                 "method": "GET",
