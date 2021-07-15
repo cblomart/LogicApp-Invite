@@ -332,7 +332,7 @@
             },
             "dependsOn": [ 
                 "[resourceId('Microsoft.KeyVault/vaults/secrets',concat(parameters('LogicAppNamePrefix'), '-kv'),'usersevents')]",
-                "[resourceId('Microsoft.Authorization/roleAssignments','guestInviterRole')]"
+                "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]"
             ] 
         }
     ],
