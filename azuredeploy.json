@@ -16,13 +16,13 @@
             "metadata": {
                 "description": "Specifies the messaging tier for Event Hub Namespace."
             }
-        }//,
-        //"graphChangeTrackingSp": {
-        //    "type": "string",
-        //    "metadata": {
-        //        "description": "ID of the 'Microsoft Graph Change Tracking' service principal"
-        //    }
-        //}
+        },
+        "graphChangeTrackingSp": {
+            "type": "string",
+            "metadata": {
+                "description": "ID of the 'Microsoft Graph Change Tracking' service principal"
+            }
+        }
     },
     "variables": {
         "eventHubNamespaceName": "[concat(parameters('LogicAppNamePrefix'), 'hub-ns')]",
@@ -85,8 +85,7 @@
                 "accessPolicies": [
                     {
                         "tenantId": "[subscription().tenantId]",
-                        "applicationId": "0bf30f3b-4a52-48df-9a82-234910c4a086",
-                        //"objectId": "[parameters('graphChangeTrackingSp')]",
+                        "objectId": "[parameters('graphChangeTrackingSp')]",
                         "permissions": {
                             "secrets": [
                                 "Get"
