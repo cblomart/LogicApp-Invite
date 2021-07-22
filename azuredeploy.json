@@ -138,7 +138,7 @@
                                             "inputs": {
                                                 "authentication": {
                                                     "audience": "https://graph.microsoft.com",
-                                                    "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]",
+                                                    /*"identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]",*/
                                                     "type": "ManagedServiceIdentity"
                                                 },
                                                 "body": "@outputs('Compose_subscription_update')",
@@ -177,7 +177,7 @@
                                         "inputs": {
                                             "authentication": {
                                                 "audience": "https://graph.microsoft.com",
-                                                "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]",
+                                                /*"identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]",*/
                                                 "type": "ManagedServiceIdentity"
                                             },
                                             "body": "@outputs('Compose_subscription')",
@@ -217,7 +217,7 @@
                             "inputs": {
                                 "authentication": {
                                     "audience": "https://graph.microsoft.com",
-                                    "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]",
+                                    /*"identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]",*/
                                     "type": "ManagedServiceIdentity"
                                 },
                                 "method": "GET",
@@ -335,8 +335,8 @@
                 "type": "SystemAssigned"
             },
             "dependsOn": [ 
-                "[resourceId('Microsoft.KeyVault/vaults/secrets',concat(parameters('LogicAppNamePrefix'), '-kv'),'usersevents')]",
-                "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]"
+                "[resourceId('Microsoft.KeyVault/vaults/secrets',concat(parameters('LogicAppNamePrefix'), '-kv'),'usersevents')]"/*,
+                "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]"*/
             ] 
         }
     ],
