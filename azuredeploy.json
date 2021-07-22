@@ -110,12 +110,12 @@
                 }
             ]
         },
-        {
+        /*{
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
             "name": "[variables('managedidentity')]",
             "apiVersion": "2018-11-30",
             "location": "[resourceGroup().location]"
-        },
+        },*/
         {
             "properties": 
             {
@@ -236,7 +236,7 @@
                                     {
                                         "name": "notificationUrl",
                                         "type": "string",
-                                        "value": "[concat('EventHub:','https://',parameters('LogicAppNamePrefix'), '.vault.azure.net/secrets/usersevents','?tenantId=',subscription().tenantId)]"
+                                        "value": "[concat('EventHub:','https://',parameters('LogicAppNamePrefix'), '.vault.azure.net/secrets/usersevents?tenantId=',subscription().tenantId)]"
                                     }
                                 ]
                             },
@@ -328,10 +328,11 @@
             "location": "[resourceGroup().location]",
             "apiVersion": "2016-06-01",
             "identity": {
-                "type": "UserAssigned",
+                /*"type": "UserAssigned",
                 "userAssignedIdentities": {
                     "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity'))]": {}
-                }
+                }*/
+                "type": "SystemAssigned"
             },
             "dependsOn": [ 
                 "[resourceId('Microsoft.KeyVault/vaults/secrets',concat(parameters('LogicAppNamePrefix'), '-kv'),'usersevents')]",
@@ -340,9 +341,9 @@
         }
     ],
     "outputs": {
-        "managedIdentityId": {
+        /*"managedIdentityId": {
             "type": "string",
             "value": "[reference(resourceID('Microsoft.ManagedIdentity/userAssignedIdentities',variables('managedidentity')), '2018-11-30').principalId]"
-        }
+        }*/
     }
 }
